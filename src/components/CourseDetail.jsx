@@ -11,7 +11,7 @@ const CourseDetail = () => {
       title: 'Word Microsoft Basics',
       description: 'Master the fundamentals of Microsoft Word with hands-on exercises and real-world examples.',
       image: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&h=400&fit=crop',
-      instructor: 'Dr. Ahmed Hassan',
+      instructor: 'Dr. Ahmed',
       duration: '4 hours',
       level: 'Beginner',
       lessons: [
@@ -289,9 +289,6 @@ const CourseDetail = () => {
               <span>{progress}% Complete</span>
             </div>
           </div>
-        </div>
-        <div className="course-image">
-          <img src={course.image} alt={course.title} />
         </div>
       </div>
 
