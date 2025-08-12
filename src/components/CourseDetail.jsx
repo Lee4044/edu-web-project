@@ -17,21 +17,21 @@ const CourseDetail = () => {
       lessons: [
         {
           id: 0,
-          title: 'Introduction to Microsoft Word',
+          title: 'انشاء مستند جديد باستخدام Word',
           duration: '15 min',
           type: 'video',
           content: 'Welcome to Microsoft Word! In this lesson, we\'ll explore the interface and basic features.'
         },
         {
           id: 1,
-          title: 'Creating Your First Document',
+          title: 'انشاء جدول باستخدام Word',
           duration: '20 min',
           type: 'interactive',
           content: 'Learn how to create, save, and format your first Word document.'
         },
         {
           id: 2,
-          title: 'Text Formatting and Styles',
+          title: 'الكتابه داخل الجدول باستخدام Word',
           duration: '25 min',
           type: 'video',
           content: 'Master text formatting, fonts, colors, and paragraph styles.'
@@ -55,7 +55,7 @@ const CourseDetail = () => {
     'excel-beginners': {
       title: 'Excel for Beginners',
       description: 'Learn Excel from scratch with practical examples and exercises.',
-      image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=400&fit=crop',
+      image: '/excel-icon.svg',
       instructor: 'Sarah Johnson',
       duration: '6 hours',
       level: 'Beginner',
@@ -86,7 +86,7 @@ const CourseDetail = () => {
     'computer-basics': {
       title: 'Computer Basics & Windows',
       description: 'Learn essential computer skills and Windows fundamentals for everyday computing.',
-      image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=800&h=400&fit=crop',
+      image: 'https://images.unsplash.com/photo-1593642532973-d31b6557fa68?w=800&h=400&fit=crop',
       instructor: 'Michael Chen',
       duration: '3 hours',
       level: 'Beginner',

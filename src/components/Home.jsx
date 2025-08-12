@@ -7,7 +7,7 @@ const Home = () => {
       id: 'word-basics',
       title: 'Word Microsoft Basics',
       description: 'Learn the fundamentals of Microsoft Word',
-      image: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=250&fit=crop',
+      image: '/word-icon.svg',
       duration: '4 hours',
       level: 'Beginner'
     },
@@ -15,7 +15,7 @@ const Home = () => {
       id: 'excel-beginners',
       title: 'Excel for Beginners',
       description: 'Master the basics of Excel spreadsheets',
-      image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=250&fit=crop',
+      image: '/excel-icon.svg',
       duration: '6 hours',
       level: 'Beginner'
     },
@@ -23,7 +23,7 @@ const Home = () => {
       id: 'computer-basics',
       title: 'Computer Basics & Windows',
       description: 'Essential computer skills and Windows fundamentals',
-      image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=250&fit=crop',
+      image: 'https://images.unsplash.com/photo-1593642532973-d31b6557fa68?w=400&h=250&fit=crop',
       duration: '3 hours',
       level: 'Beginner'
     },
@@ -49,7 +49,7 @@ const Home = () => {
     <div className="home">
       <div className="hero-section">
         <div className="hero-content">
-          <h1 className="hero-title">Welcome to Smart Way - Tech</h1>
+          <h1 className="hero-title" style={{color: '#FFFFFF'}}>Welcome to Smart Way - Tech</h1>
           <p className="hero-subtitle">Your gateway to free, high-quality education in technology and design</p>
           <div className="hero-stats">
             <div className="stat">
@@ -108,10 +108,13 @@ const Home = () => {
           margin: 0 auto;
         }
 
-        .hero-title {
-          font-size: 3rem;
+        .hero-section .hero-content .hero-title,
+        .hero-section .hero-content h1,
+        .hero-section h1.hero-title {
+          font-size: 3rem !important;
           font-weight: bold;
           margin-bottom: 1rem;
+          color: #FFFFFF !important;
           text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 

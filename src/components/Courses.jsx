@@ -6,7 +6,7 @@ const Courses = () => {
     {
       id: 'word-basics',
       title: 'Word Microsoft Basics',
-      image: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=250&fit=crop',
+      image: '/word-icon.svg',
       progress: 85,
       status: 'In Progress',
       lessons: 12,
@@ -16,7 +16,7 @@ const Courses = () => {
     {
       id: 'excel-beginners',
       title: 'Excel for Beginners',
-      image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=250&fit=crop',
+      image: '/excel-icon.svg',
       progress: 100,
       status: 'Completed',
       lessons: 15,
@@ -26,7 +26,7 @@ const Courses = () => {
     {
       id: 'computer-basics',
       title: 'Computer Basics & Windows',
-      image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=250&fit=crop',
+      image: 'https://images.unsplash.com/photo-1593642532973-d31b6557fa68?w=400&h=250&fit=crop',
       progress: 30,
       status: 'In Progress',
       lessons: 10,
