@@ -88,6 +88,89 @@ const CourseDetail = () => {
         }
       ]
     },
+    'powerpoint-essentials': {
+      title: 'PowerPoint Essentials',
+      description: 'Create professional presentations with Microsoft PowerPoint.',
+      image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=400&fit=crop',
+      instructor: 'Lisa Rodriguez',
+      duration: '3 hours',
+      level: 'Beginner',
+      lessons: [
+        {
+          id: 0,
+          title: 'PowerPoint Interface Overview',
+          duration: '15 min',
+          type: 'video',
+          content: 'Get familiar with PowerPoint\'s interface, ribbons, and slide panel.'
+        },
+        {
+          id: 1,
+          title: 'Creating Your First Presentation',
+          duration: '25 min',
+          type: 'interactive',
+          content: 'Create slides, add text, and apply basic formatting.'
+        },
+        {
+          id: 2,
+          title: 'Working with Images and Graphics',
+          duration: '30 min',
+          type: 'video',
+          content: 'Insert images, shapes, icons, and create visual elements.'
+        },
+        {
+          id: 3,
+          title: 'Animations and Transitions',
+          duration: '25 min',
+          type: 'interactive',
+          content: 'Add animations to objects and transitions between slides.'
+        },
+        {
+          id: 4,
+          title: 'Presenting and Sharing',
+          duration: '20 min',
+          type: 'video',
+          content: 'Present your slideshow and share presentations effectively.'
+        }
+      ]
+    },
+    'internet-email-basics': {
+      title: 'Internet & Email Basics',
+      description: 'Navigate the internet safely and manage email effectively.',
+      image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=400&fit=crop',
+      instructor: 'David Park',
+      duration: '2 hours',
+      level: 'Beginner',
+      lessons: [
+        {
+          id: 0,
+          title: 'Internet Basics and Web Browsers',
+          duration: '20 min',
+          type: 'video',
+          content: 'Understand the internet, web browsers, and basic navigation.'
+        },
+        {
+          id: 1,
+          title: 'Safe Browsing and Security',
+          duration: '25 min',
+          type: 'interactive',
+          content: 'Learn about online safety, passwords, and avoiding scams.'
+        },
+        {
+          id: 2,
+          title: 'Email Setup and Management',
+          duration: '30 min',
+          type: 'video',
+          content: 'Set up email accounts, compose, send, and organize emails.'
+        },
+        {
+          id: 3,
+          title: 'Email Etiquette and Best Practices',
+          duration: '15 min',
+          type: 'interactive',
+          content: 'Professional email communication and organization tips.'
+        }
+      ]
+    },
     'computer-basics': {
       title: 'Computer Basics & Windows',
       description: 'Learn essential computer skills and Windows fundamentals for everyday computing.',
