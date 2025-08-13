@@ -24,7 +24,7 @@ const Signup = () => {
     setError('');
     setSuccess('');
 
-    // Validation
+
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
       setError('Please fill in all fields');
       return;
@@ -40,7 +40,7 @@ const Signup = () => {
       return;
     }
 
-    // Simulate registration (in real app, this would be an API call)
+
     setSuccess('Account created successfully! Redirecting to login...');
     setTimeout(() => {
       navigate('/login');

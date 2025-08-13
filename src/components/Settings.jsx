@@ -45,7 +45,7 @@ const Settings = () => {
   };
 
   const handleSave = (section) => {
-    // Simulate saving settings
+
     setMessage(`تم حفظ إعدادات ${section} بنجاح!`);
     setMessageType('success');
     setTimeout(() => {

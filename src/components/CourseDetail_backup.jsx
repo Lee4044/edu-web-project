@@ -1,22 +1,17 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import Scenario1 from './Scenario1';
-import Scenario2 from './Scenario2';
-import Scenario3 from './Scenario3';
-
 
 const CourseDetail = () => {
   const { courseId } = useParams();
   const [currentLesson, setCurrentLesson] = useState(0);
   const [completedLessons, setCompletedLessons] = useState(new Set([0, 1, 2]));
 
-  
   const courseData = {
     'word-basics': {
       title: 'Word Microsoft Basics',
       description: 'Master the fundamentals of Microsoft Word with hands-on exercises and real-world examples.',
       image: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&h=400&fit=crop',
-      instructor: 'Dr. Ahmed Hassan',
+      instructor: 'Dr. Ahmed',
       duration: '4 hours',
       level: 'Beginner',
       lessons: [
@@ -60,7 +55,7 @@ const CourseDetail = () => {
     'excel-beginners': {
       title: 'Excel for Beginners',
       description: 'Learn Excel from scratch with practical examples and exercises.',
-      image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=400&fit=crop',
+      image: '/excel-icon.svg',
       instructor: 'Sarah Johnson',
       duration: '6 hours',
       level: 'Beginner',
@@ -91,7 +86,7 @@ const CourseDetail = () => {
     'computer-basics': {
       title: 'Computer Basics & Windows',
       description: 'Learn essential computer skills and Windows fundamentals for everyday computing.',
-      image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=800&h=400&fit=crop',
+      image: 'https://images.unsplash.com/photo-1593642532973-d31b6557fa68?w=800&h=400&fit=crop',
       instructor: 'Michael Chen',
       duration: '3 hours',
       level: 'Beginner',
@@ -216,73 +211,29 @@ const CourseDetail = () => {
 
   const markLessonComplete = (lessonId) => {
     setCompletedLessons(prev => new Set([...prev, lessonId]));
-
-    if (lessonId < course.lessons.length - 1) {
-      setCurrentLesson(lessonId + 1);
-    }
   };
-const renderSimulator = (lesson) => {
-  switch (lesson.id) {
-    case 0:
-      return <WordVideoSimulator1 lesson={lesson} />;
-    case 1:
-      return <WordVideoSimulator2 lesson={lesson} />;
-    case 2:
-      return <WordVideoSimulator3 lesson={lesson} />;
-    case 3:
-      return <WordInterfaceExplorer lesson={lesson} />;  
-    default:
-      return <div>Simulator not found</div>;
-  }
-};
 
-  const WordVideoSimulator1 = () => (
+  const WordVideoSimulator = () => (
     <div className="simulator">
       <div className="simulator-header">
-        <h4>📹 Interavtive Lesson 1: {course.lessons[currentLesson].title}</h4>
-        <Scenario1 />
-        <br />
+        <h4>📹 Video Lesson: {course.lessons[currentLesson].title}</h4>
+      </div>
+      <div className="video-placeholder">
+        <div className="play-button">▶️</div>
+        <p>Interactive Word Tutorial</p>
       </div>
       <div className="simulator-controls">
         <button onClick={() => markLessonComplete(currentLesson)} className="complete-btn">
-          Next Lesson →
+          Mark as Complete
         </button>
       </div>
     </div>
   );
 
-  const WordVideoSimulator2 = () => (
-    <div className="simulator">
-      <div className="simulator-header">
-        <h4>🖥️ Interactive Lesson 2: {course.lessons[currentLesson].title}</h4>
-        <Scenario2 />
-        <br />
-      </div>
-      <div className="simulator-controls">
-        <button onClick={() => markLessonComplete(currentLesson)} className="complete-btn">
-          Next Lesson →
-        </button>
-      </div>
-    </div>
-  );
-  const WordVideoSimulator3 = () => (
-    <div className="simulator">
-      <div className="simulator-header">
-        <h4>🖥️ Interactive Lesson 3: {course.lessons[currentLesson].title}</h4>
-        <Scenario3 />
-        <br />
-      </div>
-      <div className="simulator-controls">
-        <button onClick={() => markLessonComplete(currentLesson)} className="complete-btn">
-          Next Lesson →
-        </button>
-      </div>
-    </div>
-  );
   const WordInterfaceExplorer = () => (
     <div className="simulator">
       <div className="simulator-header">
-        <h4>🖥️ Interactive Lesson 4: {course.lessons[currentLesson].title}</h4>
+        <h4>🖥️ Interactive Exercise: {course.lessons[currentLesson].title}</h4>
       </div>
       <div className="interface-mockup">
         <div className="word-ribbon">
@@ -301,6 +252,11 @@ const renderSimulator = (lesson) => {
         <div className="document-area">
           <p>Click on the tools above to explore Word's interface!</p>
         </div>
+      </div>
+      <div className="simulator-controls">
+        <button onClick={() => markLessonComplete(currentLesson)} className="complete-btn">
+          Complete Exercise
+        </button>
       </div>
     </div>
   );
@@ -372,10 +328,13 @@ const renderSimulator = (lesson) => {
           </div>
           
           <div className="lesson-body">
-             <p>{course.lessons[currentLesson].content}</p>
-                {renderSimulator(course.lessons[currentLesson])}
+            <p>{course.lessons[currentLesson].content}</p>
+            
+            {course.lessons[currentLesson].type === 'video' ? 
+              <WordVideoSimulator /> : 
+              <WordInterfaceExplorer />
+            }
           </div>
-
           
           <div className="lesson-navigation">
             <button 
@@ -399,7 +358,7 @@ const renderSimulator = (lesson) => {
       <style>{`
         .course-detail {
           min-height: 100vh;
-          background: #FFF8E8;
+          background: #f8f9fa;
         }
 
         .course-header {
@@ -452,7 +411,17 @@ const renderSimulator = (lesson) => {
           font-size: 1.2rem;
         }
 
+        .course-image {
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
 
+        .course-image img {
+          width: 100%;
+          height: 300px;
+          object-fit: cover;
+        }
 
         .course-content {
           display: grid;
@@ -567,7 +536,7 @@ const renderSimulator = (lesson) => {
         }
 
         .simulator {
-          background: #FFF8E8;
+          background: #f8f9fa;
           border-radius: 12px;
           padding: 2rem;
           margin: 2rem 0;

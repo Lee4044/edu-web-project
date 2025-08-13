@@ -20,13 +20,13 @@ const Login = () => {
     e.preventDefault();
     setError('');
 
-    // Simple validation
+
     if (!formData.email || !formData.password) {
       setError('Please fill in all fields');
       return;
     }
 
-    // Simulate authentication (in real app, this would be an API call)
+
     if (formData.email && formData.password) {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userEmail', formData.email);

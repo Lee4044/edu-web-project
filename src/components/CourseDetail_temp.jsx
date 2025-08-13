@@ -215,11 +215,7 @@ const CourseDetail = () => {
   const progress = Math.round((completedLessons.size / course.lessons.length) * 100);
 
   const markLessonComplete = (lessonId) => {
-    setCompletedLessons(prev => new Set([...prev, lessonId]));
-
-    if (lessonId < course.lessons.length - 1) {
-      setCurrentLesson(lessonId + 1);
-    }
+    setCompletedLessons(prev => new Set([...prev, lessonId])); if (lessonId < course.lessons.length - 1) { setCurrentLesson(lessonId + 1); }
   };
 const renderSimulator = (lesson) => {
   switch (lesson.id) {
@@ -333,6 +329,9 @@ const renderSimulator = (lesson) => {
               <span>{progress}% Complete</span>
             </div>
           </div>
+        </div>
+        <div className="course-image">
+          <img src={course.image} alt={course.title} />
         </div>
       </div>
 
@@ -452,7 +451,17 @@ const renderSimulator = (lesson) => {
           font-size: 1.2rem;
         }
 
+        .course-image {
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
 
+        .course-image img {
+          width: 100%;
+          height: 300px;
+          object-fit: cover;
+        }
 
         .course-content {
           display: grid;
