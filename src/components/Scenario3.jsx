@@ -4,7 +4,7 @@ const steps = [
   {
     img: "/images/word_p3_1.jpeg",
     text: "الخطوة الأولى: الضغط على الخلية للبدء بالكتابة",
-    highlightStyle: { top: "85px", left: "288px", width: "49px", height: "13px" , },
+    highlightStyle: { top: "85px", left: "288px", width: "49px", height: "13px" },
     audio: "/media/audio/audio_p3_1.mpeg",
   },
   {
@@ -79,13 +79,13 @@ export default function Scenario1() {
       <h2 style={{ marginTop: 15 }}>{text}</h2>
       {audio && <audio src={audio} autoPlay />}
       {step > 0 && (
-       <button
-         onClick={() => changeStep(-1)}
-         style={{ marginTop: 10 }}
+        <button
+          onClick={() => changeStep(-1)}
+          style={{ marginTop: 10 }}
         >
-    العودة للخطوة السابقة
-         </button>
-)}
+          العودة للخطوة السابقة
+        </button>
+      )}
     </div>
   );
 }
