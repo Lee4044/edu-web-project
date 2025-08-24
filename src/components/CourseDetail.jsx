@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { coursesAPI } from '../services/api';
 import Scenario1 from './Scenario1';
 import Scenario2 from './Scenario2';
 import Scenario3 from './Scenario3';
@@ -9,9 +10,33 @@ const CourseDetail = () => {
   const { courseId } = useParams();
   const [currentLesson, setCurrentLesson] = useState(0);
   const [completedLessons, setCompletedLessons] = useState(new Set([0, 1, 2]));
+  const [courseData, setCourseData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  
-  const courseData = {
+  useEffect(() => {
+    const fetchCourseData = async () => {
+      try {
+        setLoading(true);
+        const response = await coursesAPI.getCourseById(courseId);
+        if (response.success) {
+          setCourseData(response.course);
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching course:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (courseId) {
+      fetchCourseData();
+    }
+  }, [courseId]);
+
+  // Static fallback data for development
+  const staticCourseData = {
     'word-basics': {
       title: 'Word Microsoft Basics',
       description: 'Master the fundamentals of Microsoft Word with hands-on exercises and real-world examples.',
@@ -211,7 +236,48 @@ const CourseDetail = () => {
     }
   };
 
-  const course = courseData[courseId] || courseData['word-basics'];
+  // Use fetched data or fallback to static data
+  const course = courseData || staticCourseData[courseId] || staticCourseData['word-basics'];
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading course...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Course</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Link to="/courses" className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+            Back to Courses
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!course) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Course Not Found</h2>
+          <p className="text-gray-600 mb-6">The course you're looking for doesn't exist.</p>
+          <Link to="/courses" className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+            Back to Courses
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const progress = Math.round((completedLessons.size / course.lessons.length) * 100);
 
   const markLessonComplete = (lessonId) => {

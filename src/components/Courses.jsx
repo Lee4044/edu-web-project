@@ -1,59 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { coursesAPI } from '../services/api';
 
 const Courses = () => {
-  const enrolledCourses = [
-    {
-      id: 'word-basics',
-      title: 'Word Microsoft Basics',
-      image: '/word-icon.svg',
-      progress: 85,
-      status: 'In Progress',
-      lessons: 12,
-      completedLessons: 10,
-      duration: '4 hours'
-    },
-    {
-      id: 'excel-beginners',
-      title: 'Excel for Beginners',
-      image: '/excel-icon.svg',
-      progress: 100,
-      status: 'Completed',
-      lessons: 15,
-      completedLessons: 15,
-      duration: '6 hours'
-    },
-    {
-      id: 'computer-basics',
-      title: 'Computer Basics & Windows',
-      image: 'https://images.unsplash.com/photo-1593642532973-d31b6557fa68?w=400&h=250&fit=crop',
-      progress: 30,
-      status: 'In Progress',
-      lessons: 10,
-      completedLessons: 3,
-      duration: '3 hours'
-    },
-    {
-      id: 'powerpoint-essentials',
-      title: 'PowerPoint Essentials',
-      image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=250&fit=crop',
-      progress: 0,
-      status: 'Not Started',
-      lessons: 8,
-      completedLessons: 0,
-      duration: '3 hours'
-    },
-    {
-      id: 'internet-email-basics',
-      title: 'Internet & Email Basics',
-      image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop',
-      progress: 60,
-      status: 'In Progress',
-      lessons: 6,
-      completedLessons: 4,
-      duration: '2 hours'
-    }
-  ];
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        const response = await coursesAPI.getAllCourses();
+        if (response.success) {
+          // Transform API data to match component expectations
+          const transformedCourses = response.courses.map(course => ({
+            id: course.id,
+            title: course.title,
+            image: course.icon || 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=250&fit=crop',
+            progress: Math.floor(Math.random() * 100), // Placeholder progress
+            status: ['Not Started', 'In Progress', 'Completed'][Math.floor(Math.random() * 3)],
+            lessons: 0, // Will be updated when we get lesson count
+            completedLessons: 0,
+            duration: course.estimated_duration || '2 hours',
+            description: course.description,
+            difficulty_level: course.difficulty_level
+          }));
+          setCourses(transformedCourses);
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching courses:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -76,21 +60,33 @@ const Courses = () => {
 
         <div className="courses-stats">
           <div className="stat">
-            <span className="stat-number">{enrolledCourses.length}</span>
-            <span className="stat-label">Enrolled Courses</span>
+            <span className="stat-number">{courses.length}</span>
+            <span className="stat-label">Available Courses</span>
           </div>
           <div className="stat">
-            <span className="stat-number">{enrolledCourses.filter(c => c.status === 'Completed').length}</span>
+            <span className="stat-number">{courses.filter(c => c.status === 'Completed').length}</span>
             <span className="stat-label">Completed</span>
           </div>
           <div className="stat">
-            <span className="stat-number">{enrolledCourses.filter(c => c.status === 'In Progress').length}</span>
+            <span className="stat-number">{courses.filter(c => c.status === 'In Progress').length}</span>
             <span className="stat-label">In Progress</span>
           </div>
         </div>
 
+        {loading && (
+          <div className="loading-message">
+            <p>Loading courses...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="error-message">
+            <p>Error loading courses: {error}</p>
+          </div>
+        )}
+
         <div className="courses-grid">
-          {enrolledCourses.map(course => (
+          {courses.map(course => (
             <div key={course.id} className="course-card">
               <div className="course-image">
                 <img src={course.image} alt={course.title} />
