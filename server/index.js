@@ -1,120 +1,104 @@
-async function startServer() {
-  console.log('🔄 Starting server...');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
 
-  // Dynamic imports to avoid hanging
-  const express = (await import('express')).default;
-  const cors = (await import('cors')).default;
-  const dotenv = (await import('dotenv')).default;
-  console.log('📦 Basic imports loaded');
 
-  const { checkConnection } = await import('./config/db.js');
-  console.log('🗄️  Database config loaded');
-
-  const { createAllTables } = await import('./utils/dbSchema.js');
-  console.log('📋 Schema loaded');
-
-  const insertSampleData = (await import('./utils/sampleData.js')).default;
-  console.log('📊 Sample data loaded');
-
-  const authRoutes = (await import('./routes/authRoutes.js')).default;
-  const courseRoutes = (await import('./routes/courseRoutes.js')).default;
-  console.log('🛣️  Routes loaded');
-
-// Load environment variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
-// Middleware
+
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173'], // Allow both React and Vite dev servers
+  origin: ['http://localhost:3000', 'http://localhost:5173'],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Request logging middleware
+
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/courses', courseRoutes);
 
-// Health check endpoint
+
+
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Educational Web API is running',
+    message: 'Server is running',
     timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    database: 'SQLite'
   });
 });
 
-// Root endpoint
-app.get('/', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Welcome to Educational Web API',
-    endpoints: {
-      auth: '/api/auth',
-      courses: '/api/courses',
-      health: '/api/health'
-    }
-  });
-});
 
-// Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('❌ Server Error:', err);
+  console.error('Error:', err.message);
   res.status(500).json({
     success: false,
     message: 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
   });
 });
 
-// 404 handler
+
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Endpoint not found',
+    message: 'Route not found',
     path: req.originalUrl
   });
 });
 
-// Start server 
-app.listen(PORT, async () => {
-  console.log(`\n🚀 Server is running on port ${PORT}`);
-  console.log(`📱 API Base URL: http://localhost:${PORT}/api`);
-  console.log(`🏥 Health Check: http://localhost:${PORT}/api/health`);
-  
-  console.log('\n🎉 Server ready to accept requests!');
-  
-  // Initialize database in background
-  setTimeout(async () => {
-    console.log('\n🔄 Initializing database...');
-    try {
-      const dbConnected = await checkConnection();
-      
-      if (dbConnected) {
-        await createAllTables();
-        await insertSampleData();
-        console.log('✅ Database initialization complete!');
-      } else {
-        console.log('⚠️  Database not available - using fallback data');
-      }
-    } catch (error) {
-      console.error('❌ Database setup failed:', error.message);
-      console.log('⚠️  Using fallback data');
-    }
-  }, 1000);
-});
 
-}
+const startServer = async () => {
+  try {
+    console.log('Starting server...');
+    
 
-// Start the server
+    console.log('Loading modules...');
+    const { checkConnection } = await import('./config/db.js');
+    const { createAllTables } = await import('./utils/dbSchema.js');
+    const { insertSampleData } = await import('./utils/sampleData.js');
+    const authRoutes = (await import('./routes/authRoutes.js')).default;
+    const courseRoutes = (await import('./routes/courseRoutes.js')).default;
+    console.log('Modules loaded successfully');
+    
+
+    app.use('/api/auth', authRoutes);
+    app.use('/api/courses', courseRoutes);
+    console.log('Routes configured');
+    
+
+    console.log('Initializing SQLite database...');
+    await checkConnection();
+    console.log('Database connection established');
+    
+    console.log('Creating database tables...');
+    await createAllTables();
+    console.log('Database tables created');
+    
+    console.log('Inserting sample data...');
+    await insertSampleData();
+    console.log('Sample data inserted');
+    
+    console.log('Database initialization completed successfully');
+  } catch (error) {
+    console.error('Database initialization failed:', error.message);
+    console.error('Error stack:', error.stack);
+    console.log('Server will continue with limited functionality');
+  }
+  
+  console.log('Starting Express server...');
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/api/health`);
+    console.log(`Using SQLite database`);
+    console.log('Server ready to accept requests!');
+  });
+};
+
 startServer().catch(console.error);

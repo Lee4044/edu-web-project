@@ -6,27 +6,37 @@ dotenv.config();
 const pool = mysql2.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '12345',
+  password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'education',
   connectionLimit: 10,
   queueLimit: 0,
   waitForConnections: true,
-  acquireTimeout: 60000,
-  timeout: 60000
 });
 
-export const checkConnection = async () => {
+const checkConnection = async () => {
   try {
     const connection = await pool.getConnection();
-    console.log('✅ Database connected successfully');
+    console.log('✅ MySQL database connected successfully');
     connection.release();
     return true;
   } catch (error) {
-    console.error('❌ Database connection failed:', error.message);
-    console.log('💡 Please ensure MySQL is running and the database "education" exists');
-    console.log('💡 You can continue without database - API will use fallback data');
-    return false;
+    console.error('❌ MySQL database connection failed:', error.message);
+    throw error;
   }
 };
 
-export { pool };
+const getDatabase = () => {
+  return pool;
+};
+
+const initializeDatabase = async () => {
+  try {
+    await checkConnection();
+    console.log('🔄 MySQL database initialized');
+  } catch (error) {
+    console.error('Failed to initialize MySQL database:', error.message);
+    throw error;
+  }
+};
+
+export { pool, checkConnection, getDatabase, initializeDatabase };

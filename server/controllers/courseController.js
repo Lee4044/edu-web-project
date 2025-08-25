@@ -1,9 +1,10 @@
-import { pool } from '../config/db.js';
+import { getDatabase } from '../config/db.js';
 
-// Get all courses
-export const getAllCourses = async (req, res) => {
+
+const getAllCourses = async (req, res) => {
   try {
-    const [courses] = await pool.query(`
+    const db = getDatabase();
+    const [courses] = await db.query(`
       SELECT 
         c.*,
         COUNT(l.id) as lesson_count,
@@ -17,43 +18,46 @@ export const getAllCourses = async (req, res) => {
     
     return res.status(200).json({
       success: true,
-      courses
+      data: {
+        courses
+      }
     });
   } catch (error) {
-    console.error('❌ Error fetching courses:', error);
+    console.error('Get all courses error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Error fetching courses',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: 'Internal server error'
     });
   }
 };
 
 // Get course by ID with lessons and quizzes
-export const getCourseById = async (req, res) => {
+const getCourseById = async (req, res) => {
   const { courseId } = req.params;
   
   try {
     // Get course details
-    const [courseRows] = await pool.query('SELECT * FROM courses WHERE id = ?', [courseId]);
-    const course = courseRows[0];
+    const db = getDatabase();
+    const [courses] = await db.query('SELECT * FROM courses WHERE id = ?', [courseId]);
     
-    if (!course) {
+    if (courses.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Course not found'
       });
     }
     
+    const course = courses[0];
+    
     // Get lessons for this course
-    const [lessons] = await pool.query(`
+    const [lessons] = await db.query(`
       SELECT * FROM lessons 
       WHERE course_id = ? 
       ORDER BY lesson_order ASC
     `, [courseId]);
     
     // Get quizzes for this course
-    const [quizzes] = await pool.query(`
+    const [quizzes] = await db.query(`
       SELECT 
         q.*,
         COUNT(qq.id) as question_count
@@ -66,28 +70,30 @@ export const getCourseById = async (req, res) => {
     
     return res.status(200).json({
       success: true,
-      course: {
-        ...course,
-        lessons,
-        quizzes
+      data: {
+        course: {
+          ...course,
+          lessons,
+          quizzes
+        }
       }
     });
   } catch (error) {
-    console.error('❌ Error fetching course:', error);
+    console.error('Get course by ID error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Error fetching course details',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: 'Internal server error'
     });
   }
 };
 
 // Get lesson by ID
-export const getLessonById = async (req, res) => {
+const getLessonById = async (req, res) => {
   const { lessonId } = req.params;
   
   try {
-    const [lessonRows] = await pool.query(`
+    const db = getDatabase();
+    const [lessons] = await db.query(`
       SELECT 
         l.*,
         c.title as course_title,
@@ -97,9 +103,7 @@ export const getLessonById = async (req, res) => {
       WHERE l.id = ?
     `, [lessonId]);
     
-    const lesson = lessonRows[0];
-    
-    if (!lesson) {
+    if (lessons.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Lesson not found'
@@ -108,25 +112,27 @@ export const getLessonById = async (req, res) => {
     
     return res.status(200).json({
       success: true,
-      lesson
+      data: {
+        lesson: lessons[0]
+      }
     });
   } catch (error) {
-    console.error('❌ Error fetching lesson:', error);
+    console.error('Get lesson by ID error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Error fetching lesson details',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: 'Internal server error'
     });
   }
 };
 
 // Get quiz by ID with questions
-export const getQuizById = async (req, res) => {
+const getQuizById = async (req, res) => {
   const { quizId } = req.params;
   
   try {
     // Get quiz details
-    const [quizRows] = await pool.query(`
+    const db = getDatabase();
+    const [quizzes] = await db.query(`
       SELECT 
         q.*,
         c.title as course_title
@@ -135,17 +141,17 @@ export const getQuizById = async (req, res) => {
       WHERE q.id = ?
     `, [quizId]);
     
-    const quiz = quizRows[0];
-    
-    if (!quiz) {
+    if (quizzes.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Quiz not found'
       });
     }
     
+    const quiz = quizzes[0];
+    
     // Get quiz questions
-    const [questions] = await pool.query(`
+    const [questions] = await db.query(`
       SELECT 
         id,
         question_text,
@@ -166,23 +172,24 @@ export const getQuizById = async (req, res) => {
     
     return res.status(200).json({
       success: true,
-      quiz: {
-        ...quiz,
-        questions: questionsWithParsedOptions
+      data: {
+        quiz: {
+          ...quiz,
+          questions: questionsWithParsedOptions
+        }
       }
     });
   } catch (error) {
-    console.error('❌ Error fetching quiz:', error);
+    console.error('Get quiz by ID error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Error fetching quiz details',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: 'Internal server error'
     });
   }
 };
 
 // Submit quiz answers
-export const submitQuizAnswers = async (req, res) => {
+const submitQuizAnswers = async (req, res) => {
   const { quizId } = req.params;
   const { userId, answers } = req.body;
   
@@ -195,7 +202,8 @@ export const submitQuizAnswers = async (req, res) => {
   
   try {
     // Get quiz questions with correct answers
-    const [questions] = await pool.query(`
+    const db = getDatabase();
+    const [questions] = await db.query(`
       SELECT id, correct_answer, points
       FROM quiz_questions 
       WHERE quiz_id = ?
@@ -218,14 +226,14 @@ export const submitQuizAnswers = async (req, res) => {
       }
       
       // Insert or update quiz answer
-      await pool.query(`
-        INSERT INTO quiz_answers (user_id, quiz_id, question_id, user_answer, is_correct, points_earned)
-        VALUES (?, ?, ?, ?, ?, ?)
+      await db.query(`
+        INSERT INTO quiz_answers (user_id, quiz_id, question_id, user_answer, is_correct, points_earned, answered_at)
+        VALUES (?, ?, ?, ?, ?, ?, NOW())
         ON DUPLICATE KEY UPDATE
         user_answer = VALUES(user_answer),
         is_correct = VALUES(is_correct),
         points_earned = VALUES(points_earned),
-        answered_at = CURRENT_TIMESTAMP
+        answered_at = VALUES(answered_at)
       `, [userId, quizId, answer.questionId, answer.userAnswer, isCorrect, pointsEarned]);
     }
     
@@ -234,29 +242,31 @@ export const submitQuizAnswers = async (req, res) => {
     
     return res.status(200).json({
       success: true,
-      result: {
-        totalQuestions,
-        correctAnswers,
-        totalScore,
-        percentage: Math.round(percentage * 100) / 100
+      data: {
+        result: {
+          totalQuestions,
+          correctAnswers,
+          totalScore,
+          percentage: Math.round(percentage * 100) / 100
+        }
       }
     });
   } catch (error) {
-    console.error('❌ Error submitting quiz answers:', error);
+    console.error('Submit quiz answers error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Error submitting quiz answers',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: 'Internal server error'
     });
   }
 };
 
-// Get user progress for a course
-export const getUserProgress = async (req, res) => {
+
+const getUserProgress = async (req, res) => {
   const { userId, courseId } = req.params;
   
   try {
-    const [progressRows] = await pool.query(`
+    const db = getDatabase();
+    const [progressRows] = await db.query(`
       SELECT 
         up.*,
         l.title as lesson_title,
@@ -269,14 +279,24 @@ export const getUserProgress = async (req, res) => {
     
     return res.status(200).json({
       success: true,
-      progress: progressRows
+      data: {
+        progress: progressRows
+      }
     });
   } catch (error) {
-    console.error('❌ Error fetching user progress:', error);
+    console.error('Get user progress error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Error fetching user progress',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: 'Internal server error'
     });
   }
+};
+
+export {
+  getAllCourses,
+  getCourseById,
+  getLessonById,
+  getQuizById,
+  submitQuizAnswers,
+  getUserProgress
 };

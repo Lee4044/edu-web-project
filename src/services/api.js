@@ -1,6 +1,6 @@
 const API_BASE_URL = 'http://localhost:5001/api';
 
-// Helper function to handle API responses
+
 const handleResponse = async (response) => {
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Network error' }));

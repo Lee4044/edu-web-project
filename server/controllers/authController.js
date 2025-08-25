@@ -1,5 +1,6 @@
-import { pool } from '../config/db.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { getDatabase } from '../config/db.js';
 
 // User Registration
 export const register = async (req, res) => {
@@ -33,42 +34,35 @@ export const register = async (req, res) => {
   }
 
   try {
-    // Check if user already exists (email or username)
-    const [existingUsers] = await pool.query(
-      'SELECT * FROM users WHERE email = ? OR username = ?', 
+    const db = getDatabase();
+    
+    // Check if user already exists
+    const [existingUsers] = await db.query(
+      'SELECT id FROM app_users WHERE email = ? OR username = ?',
       [email, username]
     );
-    
+
     if (existingUsers.length > 0) {
-      const existingUser = existingUsers[0];
-      if (existingUser.email === email) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Email already registered' 
-        });
-      }
-      if (existingUser.username === username) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Username already taken' 
-        });
-      }
+      return res.status(400).json({
+        success: false,
+        message: 'User with this email or username already exists'
+      });
     }
 
     // Hash password
-    const saltRounds = parseInt(process.env.BCRYPT_ROUNDS) || 10;
+    const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Insert new user
-    const [result] = await pool.query(
-      'INSERT INTO users (first_name, last_name, username, email, password) VALUES (?, ?, ?, ?, ?)',
+    const [result] = await db.query(
+      'INSERT INTO app_users (first_name, last_name, username, email, password) VALUES (?, ?, ?, ?, ?)',
       [first_name, last_name, username, email, hashedPassword]
     );
 
     console.log('✅ User registered successfully with ID:', result.insertId);
     
-    return res.status(201).json({ 
-      success: true, 
+    res.status(201).json({
+      success: true,
       message: 'User registered successfully',
       userId: result.insertId
     });
@@ -98,16 +92,22 @@ export const login = async (req, res) => {
   }
 
   try {
-    // Find user by email
-    const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
-    const user = rows[0];
+    const db = getDatabase();
+    
+    // Check if user exists
+    const [users] = await db.query(
+      'SELECT id, first_name, last_name, username, email, password FROM app_users WHERE email = ?',
+      [email]
+    );
 
-    if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Invalid email or password' 
+    if (users.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
       });
     }
+
+    const user = users[0];
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -119,6 +119,17 @@ export const login = async (req, res) => {
       });
     }
 
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        userId: user.id, 
+        email: user.email,
+        username: user.username 
+      },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '24h' }
+    );
+
     // Remove password from user object before sending response
     const { password: userPassword, ...userWithoutPassword } = user;
     
@@ -127,7 +138,8 @@ export const login = async (req, res) => {
     return res.status(200).json({ 
       success: true, 
       message: 'Login successful',
-      user: userWithoutPassword
+      user: userWithoutPassword,
+      token
     });
 
   } catch (error) {
@@ -145,14 +157,14 @@ export const getProfile = async (req, res) => {
   const { userId } = req.params;
   
   try {
-    const [rows] = await pool.query(
-      'SELECT id, first_name, last_name, username, email, created_at FROM users WHERE id = ?', 
+    const db = getDatabase();
+    
+    const [users] = await db.query(
+      'SELECT id, first_name, last_name, username, email, created_at FROM app_users WHERE id = ?', 
       [userId]
     );
     
-    const user = rows[0];
-    
-    if (!user) {
+    if (users.length === 0) {
       return res.status(404).json({ 
         success: false, 
         message: 'User not found' 
@@ -161,7 +173,7 @@ export const getProfile = async (req, res) => {
     
     return res.status(200).json({ 
       success: true, 
-      user
+      user: users[0]
     });
     
   } catch (error) {

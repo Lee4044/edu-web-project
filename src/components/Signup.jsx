@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { authAPI } from '../services/api';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -19,11 +20,10 @@ const Signup = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
-
 
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
       setError('Please fill in all fields');
@@ -40,11 +40,34 @@ const Signup = () => {
       return;
     }
 
+    try {
+      // Split name into first_name and last_name
+      const nameParts = formData.name.trim().split(' ');
+      const first_name = nameParts[0] || '';
+      const last_name = nameParts.slice(1).join(' ') || '';
+      
+      // Create username from email (before @ symbol)
+      const username = formData.email.split('@')[0];
 
-    setSuccess('Account created successfully! Redirecting to login...');
-    setTimeout(() => {
-      navigate('/login');
-    }, 2000);
+      const userData = {
+        first_name,
+        last_name,
+        username,
+        email: formData.email,
+        password: formData.password
+      };
+
+      const response = await authAPI.register(userData);
+      
+      if (response.success) {
+        setSuccess('Account created successfully! Redirecting to login...');
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      }
+    } catch (error) {
+      setError(error.message || 'Registration failed. Please try again.');
+    }
   };
 
   return (
