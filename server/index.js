@@ -45,15 +45,6 @@ app.use((err, req, res, next) => {
 });
 
 
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found',
-    path: req.originalUrl
-  });
-});
-
-
 const startServer = async () => {
   try {
     console.log('Starting server...');
@@ -71,6 +62,15 @@ const startServer = async () => {
     app.use('/api/auth', authRoutes);
     app.use('/api/courses', courseRoutes);
     console.log('Routes configured');
+    
+    // 404 handler - must be after routes
+    app.use('*', (req, res) => {
+      res.status(404).json({
+        success: false,
+        message: 'Route not found',
+        path: req.originalUrl
+      });
+    });
     
 
     console.log('Initializing SQLite database...');
