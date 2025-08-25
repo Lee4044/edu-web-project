@@ -17,6 +17,7 @@ const Courses = () => {
           const transformedCourses = response.courses.map(course => ({
             id: course.id,
             title: course.title,
+            description: course.description,
             image: course.icon || 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=250&fit=crop',
             progress: Math.floor(Math.random() * 100), // Placeholder progress
             status: ['Not Started', 'In Progress', 'Completed'][Math.floor(Math.random() * 3)],

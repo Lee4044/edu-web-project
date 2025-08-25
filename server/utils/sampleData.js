@@ -3,13 +3,13 @@ import bcryptjs from 'bcryptjs';
 
 const insertSampleData = async () => {
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     
     console.log('🔄 Inserting sample data...');
     
     // Check if data already exists
-    const [userRows] = await db.query('SELECT COUNT(*) as count FROM app_users');
-    if (userRows[0].count > 0) {
+    const userCount = await db.get('SELECT COUNT(*) as count FROM app_users');
+    if (userCount.count > 0) {
       console.log('📊 Sample data already exists, skipping insertion');
       return;
     }
@@ -41,14 +41,14 @@ const insertSampleData = async () => {
 
     for (const user of users) {
       const hashedPassword = await bcryptjs.hash(user.password, 10);
-      await db.query(
+      await db.run(
         'INSERT INTO app_users (first_name, last_name, username, email, password) VALUES (?, ?, ?, ?, ?)',
         [user.first_name, user.last_name, user.username, user.email, hashedPassword]
       );
     }
     console.log('✅ Sample users inserted');
 
-    // Insert sample posts (from coworker's schema)
+    // Insert sample posts
     const posts = [
       {
         user_id: 1,
@@ -63,13 +63,14 @@ const insertSampleData = async () => {
     ];
 
     for (const post of posts) {
-      await db.query(
+      await db.run(
         'INSERT INTO posts (user_id, title, content) VALUES (?, ?, ?)',
         [post.user_id, post.title, post.content]
       );
     }
     console.log('✅ Sample posts inserted');
 
+    // Insert sample courses
     const courses = [
       {
         title: 'Introduction to JavaScript',
@@ -102,13 +103,14 @@ const insertSampleData = async () => {
     ];
 
     for (const course of courses) {
-      await db.query(
+      await db.run(
         'INSERT INTO courses (title, description, difficulty_level, duration_hours, image_url) VALUES (?, ?, ?, ?, ?)',
         [course.title, course.description, course.difficulty_level, course.duration_hours, course.image_url]
       );
     }
     console.log('✅ Sample courses inserted');
 
+    // Insert sample lessons
     const lessons = [
       {
         course_id: 1,
@@ -126,7 +128,6 @@ const insertSampleData = async () => {
         duration_minutes: 60,
         video_url: 'https://example.com/js-lesson2'
       },
-
       {
         course_id: 2,
         title: 'Components and JSX',
@@ -146,155 +147,70 @@ const insertSampleData = async () => {
     ];
 
     for (const lesson of lessons) {
-      await db.query(
+      await db.run(
         'INSERT INTO lessons (course_id, title, content, lesson_order, duration_minutes, video_url) VALUES (?, ?, ?, ?, ?, ?)',
         [lesson.course_id, lesson.title, lesson.content, lesson.lesson_order, lesson.duration_minutes, lesson.video_url]
       );
     }
     console.log('✅ Sample lessons inserted');
 
+    // Insert sample quizzes
     const quizzes = [
       {
         course_id: 1,
         title: 'JavaScript Basics Quiz',
         description: 'Test your knowledge of JavaScript fundamentals',
-        total_questions: 3,
+        total_questions: 5,
         time_limit_minutes: 15
       },
       {
         course_id: 2,
         title: 'React Components Quiz',
-        description: 'Quiz about React components and JSX',
-        total_questions: 2,
+        description: 'Quiz on React components and JSX',
+        total_questions: 4,
         time_limit_minutes: 10
       }
     ];
 
     for (const quiz of quizzes) {
-      await db.query(
+      await db.run(
         'INSERT INTO quizzes (course_id, title, description, total_questions, time_limit_minutes) VALUES (?, ?, ?, ?, ?)',
         [quiz.course_id, quiz.title, quiz.description, quiz.total_questions, quiz.time_limit_minutes]
       );
     }
     console.log('✅ Sample quizzes inserted');
 
+    // Insert sample quiz questions
     const quizQuestions = [
       {
         quiz_id: 1,
         question_text: 'What is the correct way to declare a variable in JavaScript?',
         question_type: 'multiple_choice',
-        correct_answer: 'let myVariable = 5;',
-        options: JSON.stringify([
-          'var myVariable = 5;',
-          'let myVariable = 5;',
-          'const myVariable = 5;',
-          'variable myVariable = 5;'
-        ]),
+        options: JSON.stringify(['var x = 5;', 'variable x = 5;', 'v x = 5;', 'declare x = 5;']),
+        correct_answer: 'var x = 5;',
         points: 1,
         question_order: 1
       },
       {
         quiz_id: 1,
-        question_text: 'JavaScript is a compiled language.',
+        question_text: 'JavaScript is a case-sensitive language.',
         question_type: 'true_false',
-        correct_answer: 'false',
-        options: JSON.stringify(['true', 'false']),
-        points: 1,
-        question_order: 2
-      },
-      {
-        quiz_id: 1,
-        question_text: 'What does DOM stand for?',
-        question_type: 'short_answer',
-        correct_answer: 'Document Object Model',
-        options: null,
-        points: 2,
-        question_order: 3
-      },
-      {
-        quiz_id: 2,
-        question_text: 'What is JSX?',
-        question_type: 'multiple_choice',
-        correct_answer: 'A syntax extension for JavaScript',
-        options: JSON.stringify([
-          'A new programming language',
-          'A syntax extension for JavaScript',
-          'A database query language',
-          'A CSS framework'
-        ]),
-        points: 1,
-        question_order: 1
-      },
-      {
-        quiz_id: 2,
-        question_text: 'React components must return a single parent element.',
-        question_type: 'true_false',
-        correct_answer: 'true',
-        options: JSON.stringify(['true', 'false']),
+        options: JSON.stringify(['True', 'False']),
+        correct_answer: 'True',
         points: 1,
         question_order: 2
       }
     ];
 
     for (const question of quizQuestions) {
-      await db.query(
-        'INSERT INTO quiz_questions (quiz_id, question_text, question_type, correct_answer, options, points, question_order) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [question.quiz_id, question.question_text, question.question_type, question.correct_answer, question.options, question.points, question.question_order]
+      await db.run(
+        'INSERT INTO quiz_questions (quiz_id, question_text, question_type, options, correct_answer, points, question_order) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [question.quiz_id, question.question_text, question.question_type, question.options, question.correct_answer, question.points, question.question_order]
       );
     }
     console.log('✅ Sample quiz questions inserted');
 
-    const quizAnswers = [
-      {
-        user_id: 1,
-        quiz_id: 1,
-        question_id: 1,
-        user_answer: 'let myVariable = 5;',
-        is_correct: true,
-        points_earned: 1
-      },
-      {
-        user_id: 1,
-        quiz_id: 1,
-        question_id: 2,
-        user_answer: 'false',
-        is_correct: true,
-        points_earned: 1
-      },
-      {
-        user_id: 1,
-        quiz_id: 1,
-        question_id: 3,
-        user_answer: 'Document Object Model',
-        is_correct: true,
-        points_earned: 2
-      },
-      {
-        user_id: 2,
-        quiz_id: 2,
-        question_id: 4,
-        user_answer: 'A syntax extension for JavaScript',
-        is_correct: true,
-        points_earned: 1
-      },
-      {
-        user_id: 2,
-        quiz_id: 2,
-        question_id: 5,
-        user_answer: 'false',
-        is_correct: false,
-        points_earned: 0
-      }
-    ];
-
-    for (const answer of quizAnswers) {
-      await db.query(
-        'INSERT INTO quiz_answers (user_id, quiz_id, question_id, user_answer, is_correct, points_earned) VALUES (?, ?, ?, ?, ?, ?)',
-        [answer.user_id, answer.quiz_id, answer.question_id, answer.user_answer, answer.is_correct, answer.points_earned]
-      );
-    }
-    console.log('✅ Sample quiz answers inserted');
-
+    // Insert sample user progress
     const userProgress = [
       {
         user_id: 1,
@@ -323,7 +239,7 @@ const insertSampleData = async () => {
     ];
 
     for (const progress of userProgress) {
-      await db.query(
+      await db.run(
         'INSERT INTO user_progress (user_id, course_id, lesson_id, quiz_id, progress_type, completion_percentage, score) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [progress.user_id, progress.course_id, progress.lesson_id, progress.quiz_id, progress.progress_type, progress.completion_percentage, progress.score]
       );

@@ -24,31 +24,30 @@ const Signup = () => {
     e.preventDefault();
     setError('');
     setSuccess('');
-
+  
+    // Only check if fields are filled - no format restrictions
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
       setError('Please fill in all fields');
       return;
     }
-
+  
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return;
-    }
-
+  
+    // Remove minimum password length requirement
+    // Users can use any password length they want
+  
     try {
       // Split name into first_name and last_name
       const nameParts = formData.name.trim().split(' ');
       const first_name = nameParts[0] || '';
       const last_name = nameParts.slice(1).join(' ') || '';
       
-      // Create username from email (before @ symbol)
-      const username = formData.email.split('@')[0];
-
+      // Create username from email (before @ symbol) or use full email if no @
+      const username = formData.email.includes('@') ? formData.email.split('@')[0] : formData.email;
+  
       const userData = {
         first_name,
         last_name,
@@ -56,7 +55,7 @@ const Signup = () => {
         email: formData.email,
         password: formData.password
       };
-
+  
       const response = await authAPI.register(userData);
       
       if (response.success) {

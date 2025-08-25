@@ -1,134 +1,134 @@
 import { getDatabase } from '../config/db.js';
 
-// User table (from coworker's schema)
+// User table (SQLite compatible)
 const userTableQuery = `
   CREATE TABLE IF NOT EXISTS app_users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    first_name VARCHAR(150) NOT NULL,
-    last_name VARCHAR(150) NOT NULL,
-    username VARCHAR(150) NOT NULL UNIQUE,
-    email VARCHAR(150) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-  ) AUTO_INCREMENT=1;
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    username TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `;
 
-// Posts table (from coworker's schema)
+// Posts table (SQLite compatible)
 const postsTableQuery = `
   CREATE TABLE IF NOT EXISTS posts (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    title VARCHAR(255) NOT NULL,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
     content TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES app_users(id) ON DELETE CASCADE
-  ) AUTO_INCREMENT=1;
+  );
 `;
 
-// Courses table (educational content)
+// Courses table (SQLite compatible)
 const coursesTableQuery = `
   CREATE TABLE IF NOT EXISTS courses (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
     description TEXT,
-    difficulty_level ENUM('Beginner', 'Intermediate', 'Advanced') DEFAULT 'Beginner',
-    duration_hours INT DEFAULT 0,
-    image_url VARCHAR(500),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-  ) AUTO_INCREMENT=1;
+    difficulty_level TEXT DEFAULT 'Beginner' CHECK (difficulty_level IN ('Beginner', 'Intermediate', 'Advanced')),
+    duration_hours INTEGER DEFAULT 0,
+    image_url TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `;
 
-// Lessons table
+// Lessons table (SQLite compatible)
 const lessonsTableQuery = `
   CREATE TABLE IF NOT EXISTS lessons (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    course_id INT NOT NULL,
-    title VARCHAR(255) NOT NULL,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    course_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
     content TEXT,
-    lesson_order INT NOT NULL,
-    duration_minutes INT DEFAULT 0,
-    video_url VARCHAR(500),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    lesson_order INTEGER NOT NULL,
+    duration_minutes INTEGER DEFAULT 0,
+    video_url TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
-  ) AUTO_INCREMENT=1;
+  );
 `;
 
-// Quizzes table
+// Quizzes table (SQLite compatible)
 const quizzesTableQuery = `
   CREATE TABLE IF NOT EXISTS quizzes (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    course_id INT NOT NULL,
-    title VARCHAR(255) NOT NULL,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    course_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
     description TEXT,
-    total_questions INT DEFAULT 0,
-    time_limit_minutes INT DEFAULT 30,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    total_questions INTEGER DEFAULT 0,
+    time_limit_minutes INTEGER DEFAULT 30,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
-  ) AUTO_INCREMENT=1;
+  );
 `;
 
-// Quiz questions table
+// Quiz questions table (SQLite compatible)
 const quizQuestionsTableQuery = `
   CREATE TABLE IF NOT EXISTS quiz_questions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    quiz_id INT NOT NULL,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    quiz_id INTEGER NOT NULL,
     question_text TEXT NOT NULL,
-    question_type ENUM('multiple_choice', 'true_false', 'short_answer') DEFAULT 'multiple_choice',
-    options JSON,
-    correct_answer VARCHAR(500) NOT NULL,
-    points INT DEFAULT 1,
-    question_order INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    question_type TEXT DEFAULT 'multiple_choice' CHECK (question_type IN ('multiple_choice', 'true_false', 'short_answer')),
+    options TEXT,
+    correct_answer TEXT NOT NULL,
+    points INTEGER DEFAULT 1,
+    question_order INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
-  ) AUTO_INCREMENT=1;
+  );
 `;
 
-// Quiz answers table (user responses)
+// Quiz answers table (SQLite compatible)
 const quizAnswersTableQuery = `
   CREATE TABLE IF NOT EXISTS quiz_answers (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    quiz_id INT NOT NULL,
-    question_id INT NOT NULL,
-    user_answer VARCHAR(500),
-    is_correct BOOLEAN DEFAULT FALSE,
-    points_earned INT DEFAULT 0,
-    answered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    quiz_id INTEGER NOT NULL,
+    question_id INTEGER NOT NULL,
+    user_answer TEXT,
+    is_correct INTEGER DEFAULT 0,
+    points_earned INTEGER DEFAULT 0,
+    answered_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES app_users(id) ON DELETE CASCADE,
     FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE,
     FOREIGN KEY (question_id) REFERENCES quiz_questions(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_user_question (user_id, question_id)
-  ) AUTO_INCREMENT=1;
+    UNIQUE (user_id, question_id)
+  );
 `;
 
-// User progress table
+// User progress table (SQLite compatible)
 const userProgressTableQuery = `
   CREATE TABLE IF NOT EXISTS user_progress (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    course_id INT NOT NULL,
-    lesson_id INT,
-    quiz_id INT,
-    progress_type ENUM('lesson_completed', 'quiz_completed', 'course_started', 'course_completed') NOT NULL,
-    completion_percentage DECIMAL(5,2) DEFAULT 0.00,
-    score INT DEFAULT 0,
-    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    course_id INTEGER NOT NULL,
+    lesson_id INTEGER,
+    quiz_id INTEGER,
+    progress_type TEXT NOT NULL CHECK (progress_type IN ('lesson_completed', 'quiz_completed', 'course_started', 'course_completed')),
+    completion_percentage REAL DEFAULT 0.00,
+    score INTEGER DEFAULT 0,
+    completed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES app_users(id) ON DELETE CASCADE,
     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
     FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE SET NULL,
     FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE SET NULL
-  ) AUTO_INCREMENT=1;
+  );
 `;
 
 const createTable = async (tableName, query) => {
   try {
-    const db = getDatabase();
-    await db.query(query);
+    const db = await getDatabase();
+    await db.exec(query);
     console.log(`✅ Table '${tableName}' created successfully`);
   } catch (error) {
     console.error(`❌ Error creating ${tableName} table:`, error.message);

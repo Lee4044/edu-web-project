@@ -1,14 +1,13 @@
 import express from 'express';
 import { register, login, getProfile } from '../controllers/authController.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Authentication Routes
 router.post('/register', register);
 router.post('/login', login);
-router.get('/profile/:userId', getProfile);
+router.get('/profile', authenticateToken, getProfile);
 
-// Health check route
 router.get('/health', (req, res) => {
   res.status(200).json({ 
     success: true, 

@@ -35,7 +35,6 @@ const CourseDetail = () => {
     }
   }, [courseId]);
 
-  // Static fallback data for development
   const staticCourseData = {
     'word-basics': {
       title: 'Word Microsoft Basics',
@@ -236,7 +235,6 @@ const CourseDetail = () => {
     }
   };
 
-  // Use fetched data or fallback to static data
   const course = courseData || staticCourseData[courseId] || staticCourseData['word-basics'];
   
   if (loading) {

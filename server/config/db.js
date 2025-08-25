@@ -1,42 +1,50 @@
-import mysql2 from 'mysql2/promise';
+import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
 
-const pool = mysql2.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'education',
-  connectionLimit: 10,
-  queueLimit: 0,
-  waitForConnections: true,
-});
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+let db = null;
 
 const checkConnection = async () => {
   try {
-    const connection = await pool.getConnection();
-    console.log('✅ MySQL database connected successfully');
-    connection.release();
+    if (!db) {
+      db = await open({
+        filename: path.join(__dirname, '..', 'database.sqlite'),
+        driver: sqlite3.Database
+      });
+    }
+    
+    // Test the connection
+    await db.get('SELECT 1');
+    console.log('✅ SQLite database connected successfully');
     return true;
   } catch (error) {
-    console.error('❌ MySQL database connection failed:', error.message);
+    console.error('❌ SQLite database connection failed:', error.message);
     throw error;
   }
 };
 
-const getDatabase = () => {
-  return pool;
+const getDatabase = async () => {
+  if (!db) {
+    await checkConnection();
+  }
+  return db;
 };
 
 const initializeDatabase = async () => {
   try {
     await checkConnection();
-    console.log('🔄 MySQL database initialized');
+    console.log('🔄 SQLite database initialized');
   } catch (error) {
-    console.error('Failed to initialize MySQL database:', error.message);
+    console.error('Failed to initialize SQLite database:', error.message);
     throw error;
   }
 };
 
-export { pool, checkConnection, getDatabase, initializeDatabase };
+export { checkConnection, getDatabase, initializeDatabase };

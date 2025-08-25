@@ -1,28 +1,23 @@
 import express from 'express';
-import {
-  getAllCourses,
-  getCourseById,
-  getLessonById,
+import { 
+  getAllCourses, 
+  getCourseById, 
+  getLessonById, 
+  getUserProgress,
   getQuizById,
-  submitQuizAnswers,
-  getUserProgress
+  submitQuizAnswers 
 } from '../controllers/courseController.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Course Routes
 router.get('/', getAllCourses);
-router.get('/:courseId', getCourseById);
-router.get('/:courseId/progress/:userId', getUserProgress);
+router.get('/:id', getCourseById);
+router.get('/lessons/:id', getLessonById);
+router.get('/:courseId/progress', authenticateToken, getUserProgress);
+router.get('/quiz/:id', getQuizById);
+router.post('/quiz/:id/submit', authenticateToken, submitQuizAnswers);
 
-// Lesson Routes
-router.get('/lessons/:lessonId', getLessonById);
-
-// Quiz Routes
-router.get('/quizzes/:quizId', getQuizById);
-router.post('/quizzes/:quizId/submit', submitQuizAnswers);
-
-// Health check route
 router.get('/health', (req, res) => {
   res.status(200).json({ 
     success: true, 

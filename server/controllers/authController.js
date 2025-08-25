@@ -2,76 +2,68 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { getDatabase } from '../config/db.js';
 
-// User Registration
 export const register = async (req, res) => {
-  console.log('📝 Register request received:', req.body);
-
-  const { first_name, last_name, username, email, password } = req.body;
-  
-  // Validation
-  if (!first_name || !last_name || !username || !email || !password) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Please fill all required fields' 
-    });
-  }
-
-  // Email validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Please enter a valid email address' 
-    });
-  }
-
-  // Password validation
-  if (password.length < 6) {
-    return res.status(400).json({ 
-      success: false, 
-      message: 'Password must be at least 6 characters long' 
-    });
-  }
-
   try {
-    const db = getDatabase();
-    
-    // Check if user already exists
-    const [existingUsers] = await db.query(
-      'SELECT id FROM app_users WHERE email = ? OR username = ?',
-      [email, username]
-    );
+    const { first_name, last_name, username, email, password } = req.body;
 
-    if (existingUsers.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'User with this email or username already exists'
+    // Only check if required fields exist - no format validation
+    if (!first_name || !last_name || !username || !email || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Please fill all required fields' 
       });
     }
 
-    // Hash password
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    // Remove email regex validation - allow any email format
+    // Remove password length validation - allow any password length
 
-    // Insert new user
-    const [result] = await db.query(
-      'INSERT INTO app_users (first_name, last_name, username, email, password) VALUES (?, ?, ?, ?, ?)',
-      [first_name, last_name, username, email, hashedPassword]
-    );
+    try {
+      const db = await getDatabase();
+      
+      // Check if user already exists (keep this for data integrity)
+      const existingUser = await db.get(
+        'SELECT id FROM app_users WHERE email = ? OR username = ?',
+        [email, username]
+      );
 
-    console.log('✅ User registered successfully with ID:', result.insertId);
-    
-    res.status(201).json({
-      success: true,
-      message: 'User registered successfully',
-      userId: result.insertId
-    });
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'User with this email or username already exists'
+        });
+      }
 
+      // Hash password (keep this for security)
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      // Insert new user
+      const result = await db.run(
+        'INSERT INTO app_users (first_name, last_name, username, email, password) VALUES (?, ?, ?, ?, ?)',
+        [first_name, last_name, username, email, hashedPassword]
+      );
+
+      console.log('✅ User registered successfully with ID:', result.lastID);
+      
+      res.status(201).json({
+        success: true,
+        message: 'User registered successfully',
+        userId: result.lastID
+      });
+
+    } catch (error) {
+      console.error('❌ Registration error:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Internal server error during registration',
+        error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
   } catch (error) {
-    console.error('❌ Registration error:', error);
+    console.error('❌ Outer registration error:', error);
     return res.status(500).json({ 
       success: false, 
-      message: 'Internal server error during registration',
+      message: 'Internal server error',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
@@ -92,22 +84,20 @@ export const login = async (req, res) => {
   }
 
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     
     // Check if user exists
-    const [users] = await db.query(
+    const user = await db.get(
       'SELECT id, first_name, last_name, username, email, password FROM app_users WHERE email = ?',
       [email]
     );
 
-    if (users.length === 0) {
+    if (!user) {
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
       });
     }
-
-    const user = users[0];
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -157,14 +147,14 @@ export const getProfile = async (req, res) => {
   const { userId } = req.params;
   
   try {
-    const db = getDatabase();
+    const db = await getDatabase();
     
-    const [users] = await db.query(
+    const user = await db.get(
       'SELECT id, first_name, last_name, username, email, created_at FROM app_users WHERE id = ?', 
       [userId]
     );
     
-    if (users.length === 0) {
+    if (!user) {
       return res.status(404).json({ 
         success: false, 
         message: 'User not found' 
@@ -173,7 +163,7 @@ export const getProfile = async (req, res) => {
     
     return res.status(200).json({ 
       success: true, 
-      user: users[0]
+      user: user
     });
     
   } catch (error) {
